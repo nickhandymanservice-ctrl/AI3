@@ -283,6 +283,7 @@ const DynamicForm = ({
     label,
     fx_enabled,
     fxEnabled,
+    isMulti,
     autoFetch,
   }) => {
     const source = schema?.source?.kind;
@@ -571,7 +572,8 @@ const DynamicForm = ({
           value: options?.[key]?.value || options?.[key],
           optionsChanged,
           fxEnabled: fxEnabled || fx_enabled,
-          autoFetch: autoFetch,
+          isMulti: isMulti || false,
+          autoFetch: autoFetch || false,
         };
       default:
         return {};
