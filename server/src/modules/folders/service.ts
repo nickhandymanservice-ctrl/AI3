@@ -15,7 +15,29 @@ import { FoldersUtilService } from './util.service';
 export class FoldersService implements IFoldersService {
   constructor(protected foldersUtilService: FoldersUtilService) {}
   async createFolder(user, createFolderDto: CreateFolderDto) {
-    return this.foldersUtilService.createFolder(user, createFolderDto);
+    const folderName = createFolderDto.name;
+    const type = createFolderDto.type;
+    return await dbTransactionWrap(async (manager: EntityManager) => {
+      const folder = await catchDbException(async () => {
+        return await manager.save(
+          manager.create(Folder, {
+            name: folderName,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            organizationId: user?.organizationId,
+            createdBy: user?.id, // Set the creator
+            type,
+          })
+        );
+      }, [
+        {
+          dbConstraint: DataBaseConstraints.FOLDER_NAME_UNIQUE,
+          message: 'This folder name is already taken.',
+        },
+      ]);
+
+      return decamelizeKeys(folder);
+    });
   }
   async updateFolder(user, id, updateFolderDto: UpdateFolderDto) {
     const folderId = id;
